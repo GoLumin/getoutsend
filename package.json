@@ -1,6 +1,6 @@
 {
   "name": "@golumin/getoutsend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Astro integration for getoutsend: one configured sender, a virtual:getoutsend client, and a dev outbox so nothing is ever sent from a development server.",
   "keywords": [
     "astro-integration",
@@ -22,8 +22,7 @@
     "README.md"
   ],
   "peerDependencies": {
-    "astro": ">=6",
-    "vite": ">=6"
+    "astro": ">=6"
   },
   "engines": {
     "node": ">=20"
