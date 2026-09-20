@@ -1,0 +1,36 @@
+{
+  "name": "@golumin/getoutsend",
+  "version": "0.1.0",
+  "description": "Astro integration for getoutsend: one configured sender, a virtual:getoutsend client, and a dev outbox so nothing is ever sent from a development server.",
+  "keywords": [
+    "astro-integration",
+    "astro-component",
+    "email",
+    "withastro"
+  ],
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/runtime.ts",
+    "./dev-client": "./src/devOutbox.ts",
+    "./pages/*": "./src/pages/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "astro": ">=6",
+    "vite": ">=6"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "astro": "^7.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
+}

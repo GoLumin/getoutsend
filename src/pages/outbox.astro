@@ -1,0 +1,86 @@
+---
+// Dev-only mailbox for emails captured by the getoutsend integration.
+// Injected at /dev/outbox by the integration under `astro dev` only, so it
+// never ships in the production build.
+import { clearEmails, listEmails } from "../devOutbox.ts";
+
+export const prerender = false;
+
+if (Astro.request.method === "POST") {
+  clearEmails();
+  return Astro.redirect("/dev/outbox");
+}
+
+const messages = listEmails();
+const requested = Number(Astro.url.searchParams.get("id"));
+const selected = messages.find((m) => m.id === requested) ?? messages[0];
+const fmt = (iso: string) => new Date(iso).toLocaleTimeString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dev outbox ({messages.length})</title>
+    <style>
+      :root { color-scheme: light; font: 14px/1.4 system-ui, sans-serif; }
+      body { margin: 0; height: 100vh; display: grid; grid-template-columns: 340px 1fr; background: #f4f4f6; color: #1a1a25; }
+      aside { border-right: 1px solid #ddd; background: #fff; display: flex; flex-direction: column; min-height: 0; }
+      aside header { padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+      aside header h1 { font-size: 15px; margin: 0; }
+      aside header button { font: inherit; font-size: 12px; padding: 4px 10px; border: 1px solid #ccc; border-radius: 6px; background: #fafafa; cursor: pointer; }
+      ul { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
+      li a { display: block; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: inherit; }
+      li a:hover { background: #fafafa; }
+      li a[aria-current] { background: #fdf1f3; border-left: 3px solid #882435; padding-left: 13px; }
+      .subject { font-weight: 600; }
+      .meta { font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      main { display: flex; flex-direction: column; min-height: 0; }
+      main header { padding: 12px 20px; background: #fff; border-bottom: 1px solid #ddd; font-size: 13px; display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; }
+      main header b { color: #666; font-weight: 500; }
+      iframe { flex: 1; border: 0; width: 100%; background: #fff; }
+      .empty { margin: auto; color: #666; text-align: center; }
+      .empty code { background: #fff; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <header>
+        <h1>Dev outbox</h1>
+        <form method="post"><button type="submit">Clear</button></form>
+      </header>
+      <ul>
+        {messages.map((m) => (
+          <li>
+            <a href={`/dev/outbox?id=${m.id}`} aria-current={selected?.id === m.id ? "true" : undefined}>
+              <div class="subject">{m.subject}</div>
+              <div class="meta">to {m.to.join(", ")} · {fmt(m.receivedAt)}</div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+    <main>
+      {selected ? (
+        <>
+          <header>
+            <b>From</b><span>{selected.from}</span>
+            <b>To</b><span>{selected.to.join(", ")}</span>
+            {selected.replyTo && (<><b>Reply-To</b><span>{selected.replyTo.join(", ")}</span></>)}
+            {selected.cc && (<><b>Cc</b><span>{selected.cc.join(", ")}</span></>)}
+            {selected.bcc && (<><b>Bcc</b><span>{selected.bcc.join(", ")}</span></>)}
+            <b>Subject</b><span>{selected.subject}</span>
+          </header>
+          <iframe src={`/dev/outbox/${selected.id}`} title={selected.subject} sandbox="allow-same-origin"></iframe>
+        </>
+      ) : (
+        <p class="empty">
+          No emails captured yet.<br />
+          Submit the contact or quote form and it will show up here instead of being sent.<br /><br />
+          Messages live in memory and reset when the dev server restarts.
+        </p>
+      )}
+    </main>
+  </body>
+</html>
